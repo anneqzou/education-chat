@@ -17,9 +17,8 @@ def CallAzureGPT(input):
     # Allow self-signed certificate
     allowSelfSignedHttps(True)
 
-    # Azure Key Vault details
-    key_vault_uri = "https://education-chat-access.vault.azure.net/"
-
+    # Azure Key Vault and Secret Client Setup    
+    key_vault_uri = st.secrets["AZURE_KEY_VAULT_URI"]
     credential = ClientSecretCredential(
         client_id=st.secrets["AZURE_CLIENT_ID"],
         tenant_id=st.secrets["AZURE_TENANT_ID"],
@@ -29,22 +28,21 @@ def CallAzureGPT(input):
     # Create a secret client using the default credential
     secret_client = SecretClient(vault_url=key_vault_uri, credential=credential)
 
-    # Retrieve the secret
+    # Retrieve the secret and Use the secret (API Key) to call the REST API
     retrieved_secret = secret_client.get_secret(st.secrets["AZURE_SECRET_NAME"])
+    AML_API_key = retrieved_secret.value
 
-    # Use the secret (API Key) to call the REST API
-    api_key = retrieved_secret.value
+    # Define the request data
+    body = str.encode(json.dumps({"question": input}))
+    AML_Deployment_Endpoint = st.secrets["AZURE_ML_ENDPOINT"]
+    AML_Deployment_Name = st.secrets["AZURE_ML_Name"]
+    headers = {
+        'Content-Type':'application/json', 
+        'Authorization':('Bearer '+ AML_API_key), 
+        'azureml-model-deployment': AML_Deployment_Name
+    }
 
-    print("api_secret: ", api_key)
-
-    data = {"question": input}
-    body = str.encode(json.dumps(data))
-    
-    url = 'https://rai-aml-usw-fpxsc.westus.inference.ml.azure.com/score'
-
-    headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key), 'azureml-model-deployment': 'rai-aml-usw-fpxsc-1' }
-
-    req = urllib.request.Request(url, body, headers)
+    req = urllib.request.Request(AML_Deployment_Endpoint, body, headers)
 
     try:
         response = urllib.request.urlopen(req)
