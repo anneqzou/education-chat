@@ -20,20 +20,6 @@ def CallAzureGPT(input):
     # Azure Key Vault details
     key_vault_uri = "https://education-chat-access.vault.azure.net/"
 
-    # Get credentials
-    st.write("Client_Id:", st.secrets["AZURE_CLIENT_ID"])
-    st.write("Tenant_Id:", st.secrets["AZURE_TENANT_ID"])
-    st.write("Client_Secret:", st.secrets["AZURE_CLIENT_SECRET"])
-
-    # And the root-level secrets are also accessible as environment variables:
-
-    st.write(
-        "Has environment variables been set:",
-        os.environ["AZURE_CLIENT_ID"] == st.secrets["AZURE_CLIENT_ID"],
-        os.environ["AZURE_TENANT_ID"] == st.secrets["AZURE_TENANT_ID"],
-        os.environ["AZURE_CLIENT_SECRET"] == st.secrets["AZURE_CLIENT_SECRET"],
-    )
-
     credential = ClientSecretCredential(
         client_id=st.secrets["AZURE_CLIENT_ID"],
         tenant_id=st.secrets["AZURE_TENANT_ID"],
@@ -44,7 +30,7 @@ def CallAzureGPT(input):
     secret_client = SecretClient(vault_url=key_vault_uri, credential=credential)
 
     # Retrieve the secret
-    retrieved_secret = secret_client.get_secret(st.secrets["AZURE_CLIENT_SECRET"])
+    retrieved_secret = secret_client.get_secret(st.secrets["AZURE_SECRET_NAME"])
 
     # Use the secret (API Key) to call the REST API
     api_key = retrieved_secret.value
