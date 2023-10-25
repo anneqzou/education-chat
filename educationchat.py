@@ -1,34 +1,57 @@
-# Import necessary libraries
 import streamlit as st
-from langchain.chains import ConversationChain
-from langchain.chains.conversation.memory import ConversationEntityMemory
-from langchain.chains.conversation.prompt import ENTITY_MEMORY_CONVERSATION_TEMPLATE
-from langchain.llms import OpenAI
+import urllib.request
+import json
+import os
+import ssl
+from azure.keyvault.secrets import SecretClient
+from azure.identity import DefaultAzureCredential
 
-# Set Streamlit page configuration
-st.set_page_config(page_title='🧠MemoryBot🤖', layout='wide')
-# Initialize session states
-if "generated" not in st.session_state:
-    st.session_state["generated"] = []
-if "past" not in st.session_state:
-    st.session_state["past"] = []
-if "input" not in st.session_state:
-    st.session_state["input"] = ""
-if "stored_session" not in st.session_state:
-    st.session_state["stored_session"] = []
 
-# Define function to get user input
-def get_text():
-    """
-    Get the user input text.
+def allowSelfSignedHttps(allowed):
+    # bypass the server certificate verification on client side
+    if allowed and not os.environ.get('PYTHONHTTPSVERIFY', '') and getattr(ssl, '_create_unverified_context', None):
+        ssl._create_default_https_context = ssl._create_unverified_context
 
-    Returns:
-        (str): The text entered by the user
-    """
-    input_text = st.text_input("You: ", st.session_state["input"], key="input",
-                            placeholder="Your AI assistant here! Ask me anything ...", 
-                            label_visibility='hidden')
-    return input_text
+def CallAzureGPT(input):
+    # Allow self-signed certificate
+    allowSelfSignedHttps(True)
+
+    # Azure Key Vault details
+    key_vault_uri = "https://education-chat-access.vault.azure.net/"
+    secret_name = "test1"
+
+    # Get credentials
+    credential = DefaultAzureCredential()
+
+    # Create a secret client using the default credential
+    secret_client = SecretClient(vault_url=key_vault_uri, credential=credential)
+
+    # Retrieve the secret
+    retrieved_secret = secret_client.get_secret(secret_name)
+
+    # Use the secret (API Key) to call the REST API
+    api_key = retrieved_secret.value
+
+    data = {"question": input}
+    body = str.encode(json.dumps(data))
+    
+    url = 'https://rai-aml-usw-fpxsc.westus.inference.ml.azure.com/score'
+
+    headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key), 'azureml-model-deployment': 'rai-aml-usw-fpxsc-1' }
+
+    req = urllib.request.Request(url, body, headers)
+
+    try:
+        response = urllib.request.urlopen(req)
+        result = response.read()
+        json_obj = json.loads(result)
+        answer = json_obj.get("answer")
+        print(answer)
+        return answer
+    except urllib.error.HTTPError as error:
+        print("The request failed with status code: " + str(error.code))
+        # Print the headers - they include the requert ID and the timestamp, which are useful for debugging the failure
+        print(error.info())
 
 # Define function to start a new chat
 def new_chat():
@@ -46,61 +69,85 @@ def new_chat():
     st.session_state.entity_memory.entity_store = {}
     st.session_state.entity_memory.buffer.clear()
 
-# Set up sidebar with various options
-with st.sidebar.expander("🛠️ ", expanded=False):
-    # Option to preview memory store
-    if st.checkbox("Preview memory store"):
-        with st.expander("Memory-Store", expanded=False):
-            st.session_state.entity_memory.store
-    # Option to preview memory buffer
-    if st.checkbox("Preview memory buffer"):
-        with st.expander("Bufffer-Store", expanded=False):
-            st.session_state.entity_memory.buffer
-    MODEL = st.selectbox(label='Model', options=['gpt-3.5-turbo','text-davinci-003','text-davinci-002','code-davinci-002'])
-    K = st.number_input(' (#)Summary of prompts to consider',min_value=3,max_value=1000)
+class EntityMemory:
+    def __init__(self):
+        self.entity_store = {}
+        self.buffer = []
 
-# Set up the Streamlit app layout
-st.title("🤖 Chat Bot with 🧠")
-st.subheader(" Powered by 🦜 LangChain + OpenAI + Streamlit")
+    def add_entity(self, entity, value):
+        self.entity_store[entity] = value
 
-# Ask the user to enter their OpenAI API key
-API_O = st.sidebar.text_input("API-KEY", type="password")
+    def get_entity(self, entity):
+        return self.entity_store.get(entity)
 
-# Session state storage would be ideal
-if API_O:
-    # Create an OpenAI instance
-    llm = OpenAI(temperature=0,
-                openai_api_key=API_O, 
-                model_name=MODEL, 
-                verbose=False) 
+    def add_to_buffer(self, message):
+        self.buffer.append(message)
 
+    def clear_buffer(self):
+        self.buffer.clear()
 
-    # Create a ConversationEntityMemory object if not already created
-    if 'entity_memory' not in st.session_state:
-            st.session_state.entity_memory = ConversationEntityMemory(llm=llm, k=K )
-        
-        # Create the ConversationChain object with the specified configuration
-    Conversation = ConversationChain(
-            llm=llm, 
-            prompt=ENTITY_MEMORY_CONVERSATION_TEMPLATE,
-            memory=st.session_state.entity_memory
-        )  
-else:
-    st.sidebar.warning('API key required to try this app.The API key is not stored in any form.')
-    # st.stop()
+# Initialize session states
+if 'key' not in st.session_state:
+    st.session_state['key'] = 'value'
+if "generated" not in st.session_state:
+    st.session_state["generated"] = []
+if "past" not in st.session_state:
+    st.session_state["past"] = []
+if "input" not in st.session_state:
+    st.session_state["input"] = ""
+if "stored_session" not in st.session_state:
+    st.session_state["stored_session"] = []
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "entity_memory" not in st.session_state:
+    st.session_state.entity_memory = EntityMemory()
+if "entity_store" not in st.session_state:
+    st.session_state.entity_store = {}
+if "buffer" not in st.session_state:
+    st.session_state.buffer = []
 
+st.title("Education Chatbot")
+st.subheader(" Powered by 🦜 Azure GPT + Streamlit")
 
-# Add a button to start a new chat
-st.sidebar.button("New Chat", on_click = new_chat, type='primary')
+# Define function to get user input
+def get_text():
+    """
+    Get the user input text.
+
+    Returns:
+        (str): The text entered by the user
+    """
+    input_text = st.text_input("You: ", st.session_state["input"], key="input",
+                            placeholder="Your AI assistant here! Ask me anything ...", 
+                            label_visibility='hidden')
+    return input_text
+
+#for message in st.session_state.messages:
+    #with st.chat_message(message["role"]):
+     #   st.markdown(message["content"])
+
+#if prompt := st.chat_input("What is up?"):
+    #st.session_state.messages.append({"role": "user", "content": prompt})
+    #with st.chat_message("user"):
+     #   st.markdown(prompt)
+
+    #with st.chat_message("assistant"):
+     #   message_placeholder = st.empty()
+     #   full_response = CallAzureGPT(prompt)        
+     #   message_placeholder.markdown(full_response)
+     #   st.session_state.messages.append({"role": "assistant", "content": full_response})
 
 # Get the user input
 user_input = get_text()
 
 # Generate the output using the ConversationChain object and the user input, and add the input/output to the session
 if user_input:
-    output = Conversation.run(input=user_input)  
+    full_response = CallAzureGPT(input=user_input)  
     st.session_state.past.append(user_input)  
-    st.session_state.generated.append(output)  
+    st.session_state.generated.append(full_response)  
+
+# Add a button to start a new chat
+st.sidebar.button("New Chat", on_click = new_chat, type='primary')
 
 # Allow to download as well
 download_str = []
