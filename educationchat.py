@@ -35,6 +35,8 @@ def CallAzureGPT(input):
     # Use the secret (API Key) to call the REST API
     api_key = retrieved_secret.value
 
+    print("api_secret: ", api_key)
+
     data = {"question": input}
     body = str.encode(json.dumps(data))
     

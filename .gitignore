@@ -1,1 +1,3 @@
 .local_setting.txt
+.streamlit/secrets.toml
+.gitignore
