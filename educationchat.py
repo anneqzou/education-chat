@@ -18,7 +18,7 @@ def CallAzureGPT(input):
 
     # Azure Key Vault details
     key_vault_uri = "https://education-chat-access.vault.azure.net/"
-    secret_name = "test1"
+    secret_name = "V1d8Q~vFI2HG_tfWY0CEh7I4v33xfw0MB5eE.aCc"
 
     # Get credentials
     credential = DefaultAzureCredential()
