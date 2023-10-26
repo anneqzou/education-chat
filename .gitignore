@@ -1,3 +1,6 @@
 .local_setting.txt
 .streamlit/secrets.toml
 .gitignore
+.streamlit/secrets2.toml
+__pycache__/AzureGPT_API.cpython-311.pyc
+__pycache__/helper.cpython-311.pyc

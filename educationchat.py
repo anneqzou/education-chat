@@ -6,8 +6,6 @@ import ssl
 from azure.keyvault.secrets import SecretClient
 from azure.identity import ClientSecretCredential
 
-
-
 def allowSelfSignedHttps(allowed):
     # bypass the server certificate verification on client side
     if allowed and not os.environ.get('PYTHONHTTPSVERIFY', '') and getattr(ssl, '_create_unverified_context', None):
@@ -114,40 +112,10 @@ st.subheader(" Powered by 🦜 Azure GPT + Streamlit")
 
 # Define function to get user input
 def get_text():
-    """
-    Get the user input text.
-
-    Returns:
-        (str): The text entered by the user
-    """
     input_text = st.text_input("You: ", st.session_state["input"], key="input",
                             placeholder="Your AI assistant here! Ask me anything ...", 
                             label_visibility='hidden')
     return input_text
-
-#for message in st.session_state.messages:
-    #with st.chat_message(message["role"]):
-     #   st.markdown(message["content"])
-
-#if prompt := st.chat_input("What is up?"):
-    #st.session_state.messages.append({"role": "user", "content": prompt})
-    #with st.chat_message("user"):
-     #   st.markdown(prompt)
-
-    #with st.chat_message("assistant"):
-     #   message_placeholder = st.empty()
-     #   full_response = CallAzureGPT(prompt)        
-     #   message_placeholder.markdown(full_response)
-     #   st.session_state.messages.append({"role": "assistant", "content": full_response})
-
-# Get the user input
-user_input = get_text()
-
-# Generate the output using the ConversationChain object and the user input, and add the input/output to the session
-if user_input:
-    full_response = CallAzureGPT(input=user_input)  
-    st.session_state.past.append(user_input)  
-    st.session_state.generated.append(full_response)  
 
 # Add a button to start a new chat
 st.sidebar.button("New Chat", on_click = new_chat, type='primary')
@@ -169,10 +137,19 @@ with st.expander("Conversation", expanded=True):
 
 # Display stored conversation sessions in the sidebar
 for i, sublist in enumerate(st.session_state.stored_session):
-        with st.sidebar.expander(label= f"Conversation-Session:{i}"):
-            st.write(sublist)
+    with st.sidebar.expander(label= f"Conversation-Session:{i}"):
+        st.write(sublist)
 
 # Allow the user to clear all stored conversation sessions
 if st.session_state.stored_session:   
     if st.sidebar.checkbox("Clear-all"):
         del st.session_state.stored_session
+
+# Get the user input
+user_input = get_text()
+
+# Generate the output using CallAzureGPT and the user input, and add the input/output to the session
+if user_input:
+    full_response = CallAzureGPT(input=user_input)  
+    st.session_state.past.append(user_input)  
+    st.session_state.generated.append(full_response)
