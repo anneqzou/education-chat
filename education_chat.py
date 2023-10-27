@@ -57,11 +57,6 @@ for q in buildInPrompts:
         args=[q["prompt"]] 
     )
 
-# Display chat messages from history on app rerun
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
 with st.container():
     # React to user input
     if prompt := st.chat_input("What is up?"):
@@ -79,6 +74,11 @@ with st.container():
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
         st.session_state["first_message_in_sesson"] = True
+
+# Display chat messages from history on app rerun
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
 if st.session_state["first_message_in_sesson"] == True:
     st.download_button(label="Download", data=generate_conversion(), key="assistant-download")
