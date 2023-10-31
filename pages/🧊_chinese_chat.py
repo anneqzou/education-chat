@@ -1,6 +1,5 @@
 import streamlit as st
-from utils.AzureGPT_API import CallAzureGPT, CallAzure_GPT35, CallAzure_Llama2
-from utils.helper import new_chat, generate_conversion
+from utils.AzureGPT_API import CallAzure_Llama2
 from utils.chinese_chat_buildin_prompt import buildInPrompts
 
 def initialize_page_config():
@@ -31,6 +30,30 @@ def initialize_page_config():
     if "trigger_by_built_in_prompt_chinese_chatbot" not in st.session_state:
         st.session_state.trigger_by_built_in_prompt_chinese_chatbot = False
     # End of Initialize session_state
+
+def new_chat():
+    save = []
+    for i in range(len(st.session_state.messages_chinese_chatbot)-1, -1, -1):
+        msg = st.session_state.messages_chinese_chatbot[i]
+        if msg["content"] != None:            
+            save.append(msg["role"] + ": " + msg["content"] + "\n")
+        else:
+            save.append(msg["role"] + ": " + "No message returned from ChatGPT. Please retry later. \n")  
+    
+    st.session_state.stored_session_chinese_chatbot.append(save)
+    st.session_state.messages_chinese_chatbot = []
+    st.session_state.first_message_in_sesson_chinese_chatbot = False
+
+def generate_conversion():    
+    save = []
+    for i in range(len(st.session_state.messages_chinese_chatbot)):        
+        msg = st.session_state.messages_chinese_chatbot[i]        
+        if msg["content"] != None:            
+            save.append(msg["role"] + ": " + msg["content"] + "\n")
+        else:
+            save.append(msg["role"] + ": " + "No message returned from ChatGPT. Please retry later. \n")
+    download_str = '\n'.join(save)
+    return download_str
 
 # Initialize page config
 initialize_page_config()
