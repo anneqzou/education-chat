@@ -7,3 +7,8 @@ __pycache__/helper.cpython-311.pyc
 __pycache__/buildin_prompt.cpython-311.pyc
 education_chat.py
 .gitignore
+utils/__pycache__/AzureGPT_API.cpython-310.pyc
+utils/__pycache__/buildin_prompt.cpython-310.pyc
+utils/__pycache__/chinese_chat_buildin_prompt.cpython-310.pyc
+utils/__pycache__/education_chat_buildin_prompt.cpython-310.pyc
+utils/__pycache__/helper.cpython-310.pyc

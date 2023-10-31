@@ -1,22 +1,39 @@
 import streamlit as st
-from AzureGPT_API import CallAzureGPT, CallAzure_GPT35
-from helper import new_chat, generate_conversion
-from buildin_prompt import buildInPrompts
+from utils.AzureGPT_API import CallAzureGPT, CallAzure_GPT35
+from utils.helper import new_chat, generate_conversion
+from utils.education_chat_buildin_prompt import buildInPrompts
 
-# Initialize session_state
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+def initialize_page_config():
+    """
+    Initializes the page configuration for the Streamlit app.
 
-if "stored_session" not in st.session_state:
-    st.session_state["stored_session"] = []
+    The function sets the page title, icon, layout, and initial sidebar state.
 
-if "first_message_in_sesson" not in st.session_state:
-    st.session_state["first_message_in_sesson"] = False
+    Returns:
+        None
+    """
+    st.set_page_config(        
+        page_icon="🤖",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
 
-if "trigger_by_built_in_prompt" not in st.session_state:
-    st.session_state["trigger_by_built_in_prompt"] = False
+    # Initialize session_state
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-# End of Initialize session_state
+    if "stored_session" not in st.session_state:
+        st.session_state["stored_session"] = []
+
+    if "first_message_in_sesson" not in st.session_state:
+        st.session_state["first_message_in_sesson"] = False
+
+    if "trigger_by_built_in_prompt" not in st.session_state:
+        st.session_state["trigger_by_built_in_prompt"] = False
+    # End of Initialize session_state
+
+# Initialize page config
+initialize_page_config()
 
 # Set up sidebar with various options
 with st.sidebar:
@@ -30,8 +47,8 @@ with st.sidebar:
     else:
         st.write("You selected gpt-4")
 
-st.title("Education Chatbot")
-st.subheader(" Powered by 🦜 Azure GPT + Streamlit")
+st.title("Education Chat")
+st.subheader(" Powered by 🦜 PromptFlow + Azure GPT + Streamlit")
 
 def send_button_ques(prompt):
     with st.container():

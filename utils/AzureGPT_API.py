@@ -96,3 +96,47 @@ def CallAzure_GPT35(input):
         print("The request failed with status code: " + str(error.code))
         # Print the headers - they include the requert ID and the timestamp, which are useful for debugging the failure
         print(error.info())
+
+
+def CallAzure_Llama2(input):
+    # Allow self-signed certificate
+    allowSelfSignedHttps(True)
+
+    # Azure Key Vault and Secret Client Setup    
+    key_vault_uri = st.secrets["AZURE_KEY_VAULT_URI"]
+    credential = ClientSecretCredential(
+        client_id=st.secrets["AZURE_CLIENT_ID"],
+        tenant_id=st.secrets["AZURE_TENANT_ID"],
+        client_secret=st.secrets["AZURE_CLIENT_SECRET"]
+    )
+
+    # Create a secret client using the default credential
+    secret_client = SecretClient(vault_url=key_vault_uri, credential=credential)
+
+    # Retrieve the secret and Use the secret (API Key) to call the REST API
+    retrieved_secret = secret_client.get_secret(st.secrets["AZURE_SECRET_NAME_LLAMA2"])
+    AML_API_key = retrieved_secret.value
+
+    # Define the request data
+    body = str.encode(json.dumps({"question": input}))
+    AML_Deployment_Endpoint = st.secrets["AZURE_ML_ENDPOINT_LLAMA2"]
+    AML_Deployment_Name = st.secrets["AZURE_ML_Name_LLAMA2"]
+    headers = {
+        'Content-Type':'application/json', 
+        'Authorization':('Bearer '+ AML_API_key), 
+        'azureml-model-deployment': AML_Deployment_Name
+    }
+
+    req = urllib.request.Request(AML_Deployment_Endpoint, body, headers)
+
+    try:
+        response = urllib.request.urlopen(req)
+        result = response.read()
+        json_obj = json.loads(result)
+        answer = json_obj.get("answer")
+        #print(answer)
+        return answer
+    except urllib.error.HTTPError as error:
+        print("The request failed with status code: " + str(error.code))
+        # Print the headers - they include the requert ID and the timestamp, which are useful for debugging the failure
+        print(error.info())
