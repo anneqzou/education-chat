@@ -2,6 +2,7 @@ import streamlit as st
 from utils.AzureGPT_API import CallAzureGPT, CallAzure_GPT35
 from utils.helper import new_chat, generate_conversion
 from utils.education_chat_buildin_prompt import buildInPrompts
+import csv
 
 def initialize_page_config():
     """
@@ -58,6 +59,8 @@ def send_button_ques(prompt):
         st.session_state.messages.append({"role": "user", "content": prompt})
         if MODEL == "gpt-4":
             response = CallAzureGPT(prompt)
+            #add function to log prompt and response
+            log_input_and_response_in_csv_file(prompt, response)
         elif MODEL == "gpt-3.5-turbo":
             response = CallAzure_GPT35(prompt)
         # Add assistant response to chat history
@@ -74,23 +77,32 @@ for q in buildInPrompts:
         args=[q["prompt"]] 
     )
 
-with st.container():
-    # React to user input
-    if prompt := st.chat_input("What is up?"):
-        st.session_state["trigger_by_built_in_prompt"] = False
-        # Display user message in chat message container
-        # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
+def log_input_and_response_in_csv_file(prompt, response):  
+    print("log_input_and_response_in_csv_file")
+    with open('log.csv', 'a') as file:
+        # when I write to the file, there is comma and new lines in both prompt and response, it will break the csv file. we should consider how to handle this case.
+        writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow([prompt, response])
 
-        if MODEL == "gpt-4":
-            response = CallAzureGPT(prompt)
-        elif MODEL == "gpt-3.5-turbo":
-            response = CallAzure_GPT35(prompt)
 
-        # Display assistant response in chat message container
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        st.session_state["first_message_in_sesson"] = True
+# React to user input
+if prompt := st.chat_input("What is up?"):
+    st.session_state["trigger_by_built_in_prompt"] = False
+    # Display user message in chat message container
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
+    if MODEL == "gpt-4":
+        response = CallAzureGPT(prompt)
+        #add function to log prompt and response
+        log_input_and_response_in_csv_file(prompt, response)
+    elif MODEL == "gpt-3.5-turbo":
+        response = CallAzure_GPT35(prompt)
+
+    # Display assistant response in chat message container
+    # Add assistant response to chat history
+    st.session_state.messages.append({"role": "assistant", "content": response})
+    st.session_state["first_message_in_sesson"] = True
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:

@@ -93,21 +93,21 @@ for q in buildInPrompts:
         args=[q["prompt"]] 
     )
 
-with st.container():
-    # React to user input
-    if prompt := st.chat_input("What is up?"):
-        st.session_state.trigger_by_built_in_prompt_chinese_chatbot = False
-        # Display user message in chat message container
-        # Add user message to chat history
-        st.session_state.messages_chinese_chatbot.append({"role": "user", "content": prompt})
 
-        if MODEL == "llama2":
-            response = CallAzure_Llama2(prompt)
+# React to user input
+if prompt := st.chat_input("What is up?"):
+    st.session_state.trigger_by_built_in_prompt_chinese_chatbot = False
+    # Display user message in chat message container
+    # Add user message to chat history
+    st.session_state.messages_chinese_chatbot.append({"role": "user", "content": prompt})
 
-        # Display assistant response in chat message container
-        # Add assistant response to chat history
-        st.session_state.messages_chinese_chatbot.append({"role": "assistant", "content": response})
-        st.session_state.first_message_in_sesson_chinese_chatbot = True
+    if MODEL == "llama2":
+        response = CallAzure_Llama2(prompt)
+
+    # Display assistant response in chat message container
+    # Add assistant response to chat history
+    st.session_state.messages_chinese_chatbot.append({"role": "assistant", "content": response})
+    st.session_state.first_message_in_sesson_chinese_chatbot = True
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages_chinese_chatbot:
