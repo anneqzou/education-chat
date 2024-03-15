@@ -38,7 +38,10 @@ st.title("💬 Open AI Chatbot")
 st.caption("🚀 A streamlit chatbot powered by OpenAI LLM")
 
 for msg in st.session_state[pagename]["messages"]:
-    st.chat_message(msg["role"]).code(msg["content"])
+    if msg["role"] == "assistant":
+        st.chat_message(msg["role"]).write(msg["content"])
+    else:
+        st.chat_message(msg["role"]).code(msg["content"])
 
 if prompt := st.chat_input():
     if not st.session_state[pagename]["openai_base_url"]:

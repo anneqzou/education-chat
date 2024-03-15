@@ -40,7 +40,10 @@ st.title("💬 SelfHost LLM Chatbot")
 st.caption("🚀 A streamlit chatbot powered by AOAI LLM")
 
 for msg in st.session_state[pagename]["messages"]:
-    st.chat_message(msg["role"]).code(msg["content"])
+    if msg["role"] == "assistant":
+        st.chat_message(msg["role"]).write(msg["content"])
+    else:
+        st.chat_message(msg["role"]).code(msg["content"])
 
 if prompt := st.chat_input():
     if not st.session_state[pagename]["openai_base_url"]:
@@ -64,32 +67,31 @@ if prompt := st.chat_input():
         output_string = format_output(prompt)
         st.code(output_string)
         st.session_state[pagename]["messages"].append(
-            {"role": "user", "content": prompt}
+            {"role": "user", "content": output_string}
         )
 
     if st.session_state[pagename]["stream_mode"] == "No":
         with st.chat_message("assistant"):
-            completion = client.completions.create(
+            response = client.chat.completions.create(
                 model=st.session_state[pagename]["llm_model"],
-                prompt=prompt,
+                messages=st.session_state[pagename]["messages"],
                 temperature=st.session_state[pagename]["temperature"],
                 max_tokens=st.session_state[pagename]["max_tokens"],
                 top_p=st.session_state[pagename]["top_p"],
                 frequency_penalty=st.session_state[pagename]["frequency_penalty"],
                 presence_penalty=st.session_state[pagename]["presence_penalty"],
             )
-            # msg = response.choices[0].message.content
-            response = completion.choices[0].text
-            st.write(response)
+            msg = response.choices[0].message.content
+            st.write(msg)
             st.session_state[pagename]["messages"].append(
-                {"role": "assistant", "content": response}
+                {"role": "assistant", "content": msg}
             )
 
     else:
         with st.chat_message("assistant"):
-            completion = client.completions.create(
+            response = client.chat.completions.create(
                 model=st.session_state[pagename]["llm_model"],
-                prompt=prompt,
+                messages=st.session_state[pagename]["messages"],
                 temperature=st.session_state[pagename]["temperature"],
                 max_tokens=st.session_state[pagename]["max_tokens"],
                 top_p=st.session_state[pagename]["top_p"],
@@ -98,7 +100,7 @@ if prompt := st.chat_input():
                 stream=True,
             )
 
-            response = st.write_stream(completion)
+            msg = st.write_stream(response)
             st.session_state[pagename]["messages"].append(
-                {"role": "assistant", "content": response}
+                {"role": "assistant", "content": msg}
             )
