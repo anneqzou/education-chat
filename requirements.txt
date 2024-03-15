@@ -2,3 +2,5 @@ streamlit
 azure-identity 
 azure-keyvault-secrets 
 requests
+openai
+python-dotenv
