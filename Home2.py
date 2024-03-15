@@ -20,13 +20,13 @@ def main():
     st.write("## Select chatbot to test:")
 
     if st.button("OpenAI Chatbot"):
-        st.switch_page("chatbot/pages/1_OpenAI_Chatbot.py")
+        st.switch_page("pages/1_OpenAI_Chatbot.py")
 
     if st.button("AOAI Chatbot"):
-        st.switch_page("chatbot/pages/2_AOAI_Chatbot.py")
+        st.switch_page("pages/2_AOAI_Chatbot.py")
 
     if st.button("Self Host Chatbot"):
-        st.switch_page("chatbot/pages/3_SelfHost_Chatbot.py")
+        st.switch_page("pages/3_SelfHost_Chatbot.py")
 
 
 if __name__ == "__main__":
