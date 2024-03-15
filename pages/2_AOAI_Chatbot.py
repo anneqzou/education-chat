@@ -69,7 +69,7 @@ if prompt := st.chat_input():
         output_string = format_output(prompt)
         st.code(output_string)
         st.session_state[pagename]["messages"].append(
-            {"role": "user", "content": prompt}
+            {"role": "user", "content": output_string}
         )
 
     if st.session_state[pagename]["stream_mode"] == "No":
