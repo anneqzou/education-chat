@@ -6,16 +6,16 @@ from utils.helper import (
     initialize_llm_parameters_session_state,
     initialize_page_session_state,
     sidebar_for_llm_parameters,
-    sidebar_for_openai_endpoint,
+    sidebar_for_selfhost_endpoint,
 )
 
 pagename = "selfhost_history"
 
 default_chatbot_values = {
     "messages": [{"role": "assistant", "content": "How can I help you?"}],
-    "llm_model": "",
-    "openai_base_url": "",
-    "openai_api_key": "",
+    "selfhost_model": "",
+    "selfhost_openai_base_url": "",
+    "selfhost_openai_api_key": "",
 }
 
 initialize_page_session_state(pagename, default_chatbot_values)
@@ -26,11 +26,7 @@ with st.sidebar:
 
     st.subheader("Models and parameters")
 
-    st.session_state[pagename]["llm_model"] = st.sidebar.selectbox(
-        "Choose a Self-Host model", ["THUDM/chatglm3-6b-32k"], key="llm_model", index=0
-    )
-
-    sidebar_for_openai_endpoint(pagename)
+    sidebar_for_selfhost_endpoint(pagename)
 
     sidebar_for_llm_parameters(pagename)
 
@@ -46,21 +42,21 @@ for msg in st.session_state[pagename]["messages"]:
         st.chat_message(msg["role"]).code(msg["content"])
 
 if prompt := st.chat_input():
-    if not st.session_state[pagename]["openai_base_url"]:
+    if not st.session_state[pagename]["selfhost_openai_base_url"]:
         st.info("Please add your Self Host LLM Endpoint to continue.")
         st.stop()
 
-    if not st.session_state[pagename]["openai_api_key"]:
+    if not st.session_state[pagename]["selfhost_openai_api_key"]:
         st.info("Please add your OpenAI API key to continue.")
         st.stop()
 
-    if not st.session_state[pagename]["llm_model"]:
+    if not st.session_state[pagename]["selfhost_model"]:
         st.info("Please add your SelfHost LLM Model to continue.")
         st.stop()
 
     client = OpenAI(
-        api_key=st.session_state[pagename]["openai_api_key"],
-        base_url=st.session_state[pagename]["openai_base_url"],
+        api_key=st.session_state[pagename]["selfhost_openai_api_key"],
+        base_url=st.session_state[pagename]["selfhost_openai_base_url"],
     )
 
     with st.chat_message("user"):
@@ -73,7 +69,7 @@ if prompt := st.chat_input():
     if st.session_state[pagename]["stream_mode"] == "No":
         with st.chat_message("assistant"):
             response = client.chat.completions.create(
-                model=st.session_state[pagename]["llm_model"],
+                model=st.session_state[pagename]["selfhost_model"],
                 messages=st.session_state[pagename]["messages"],
                 temperature=st.session_state[pagename]["temperature"],
                 max_tokens=st.session_state[pagename]["max_tokens"],
@@ -90,7 +86,7 @@ if prompt := st.chat_input():
     else:
         with st.chat_message("assistant"):
             response = client.chat.completions.create(
-                model=st.session_state[pagename]["llm_model"],
+                model=st.session_state[pagename]["selfhost_model"],
                 messages=st.session_state[pagename]["messages"],
                 temperature=st.session_state[pagename]["temperature"],
                 max_tokens=st.session_state[pagename]["max_tokens"],

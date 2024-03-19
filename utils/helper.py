@@ -12,6 +12,10 @@ def clear_chat_history(pagename):
             {"role": "assistant", "content": "How can I help you?"}
         ]
 
+def clear_chat_multi_history(pagename):
+    if pagename in st.session_state:
+        st.session_state[pagename]["messages"] = [
+        ]
 
 def initialize_page_session_state(pagename, default_values):
     if pagename not in st.session_state:
@@ -82,6 +86,11 @@ def sidebar_for_llm_parameters(pagename: str):
 
 
 def sidebar_for_openai_endpoint(pagename: str):
+    
+    st.session_state[pagename]["openai_model"] = st.sidebar.selectbox(
+        "Choose the model", ["gpt-3.5-turbo"], key="openai_model", index=0
+    )
+
     st.session_state[pagename]["openai_base_url"] = st.text_input(
         "OPENAI BASE URL",
         key="openai_base_url",
@@ -97,6 +106,26 @@ def sidebar_for_openai_endpoint(pagename: str):
         value=st.session_state[pagename].get("openai_api_key", ""),
     )
 
+def sidebar_for_selfhost_endpoint(pagename: str):
+    
+    st.session_state[pagename]["selfhost_model"] = st.sidebar.selectbox(
+        "Choose a Self-Host model", ["THUDM/chatglm3-6b-32k"], key="selfhost_model", index=0
+    )
+
+    st.session_state[pagename]["selfhost_openai_base_url"] = st.text_input(
+        "SelfHost OPENAI BASE URL",
+        key="selfhost_openai_base_url",
+        type="default",
+        # Use the current value from st.session_state for the initial value
+        value=st.session_state[pagename].get("selfhost_openai_base_url", ""),
+    )
+
+    st.session_state[pagename]["selfhost_openai_api_key"] = st.text_input(
+        "SelfHost OPENAI API KEY",
+        key="selfhost_openai_api_key",
+        type="password",
+        value=st.session_state[pagename].get("selfhost_openai_api_key", ""),
+    )
 
 def sidebar_for_aoai_endpoint(pagename: str):
     st.session_state[pagename]["azure_openai_endpoint"] = st.text_input(

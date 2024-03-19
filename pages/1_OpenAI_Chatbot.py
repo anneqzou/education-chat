@@ -13,7 +13,7 @@ pagename = "openai_history"
 
 default_chatbot_values = {
     "messages": [{"role": "assistant", "content": "How can I help you?"}],
-    "llm_model": "",
+    "openai_model": "",
     "openai_base_url": "",
     "openai_api_key": "",
 }
@@ -24,10 +24,6 @@ initialize_llm_parameters_session_state(pagename)
 
 with st.sidebar:
     st.subheader("Models and parameters")
-
-    st.session_state[pagename]["llm_model"] = st.sidebar.selectbox(
-        "Choose the model", ["gpt-3.5-turbo"], key="llm_model", index=0
-    )
 
     sidebar_for_openai_endpoint(pagename)
 
@@ -52,7 +48,7 @@ if prompt := st.chat_input():
         st.info("Please add your OpenAI API key to continue.")
         st.stop()
 
-    if not st.session_state[pagename]["llm_model"]:
+    if not st.session_state[pagename]["openai_model"]:
         st.info("Please add your SelfHost LLM Model to continue.")
         st.stop()
 
@@ -71,7 +67,7 @@ if prompt := st.chat_input():
     if st.session_state[pagename]["stream_mode"] == "No":
         with st.chat_message("assistant"):
             response = client.chat.completions.create(
-                model=st.session_state[pagename]["llm_model"],
+                model=st.session_state[pagename]["openai_model"],
                 messages=st.session_state[pagename]["messages"],
                 temperature=st.session_state[pagename]["temperature"],
                 max_tokens=st.session_state[pagename]["max_tokens"],
@@ -88,7 +84,7 @@ if prompt := st.chat_input():
     else:
         with st.chat_message("assistant"):
             completion = client.chat.completions.create(
-                model=st.session_state[pagename]["llm_model"],
+                model=st.session_state[pagename]["openai_model"],
                 messages=st.session_state[pagename]["messages"],
                 temperature=st.session_state[pagename]["temperature"],
                 max_tokens=st.session_state[pagename]["max_tokens"],
