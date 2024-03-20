@@ -9,7 +9,7 @@
             "value": "B2"
         },
         "linuxFxVersion": {
-            "value": "PYTHON|3.9"
+            "value": "PYTHON|3.11"
         },
         "repoUrl": {
             "value": "https://github.com/anneqzou/education-chat.git"
