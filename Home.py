@@ -70,8 +70,8 @@ for user_message in user_messages:
             st.chat_message("assistant").write(response)
 
 default_headers = {
-    "x-lg-quota-identity": "Microsoft:AIP:AOAI:Stream",
-    "x-lg-quota-priority": "2"
+#    "x-lg-quota-identity": "Microsoft:AIP:AOAI:Stream",
+#    "x-lg-quota-priority": "2"
 }
 
 if prompt := st.chat_input():
