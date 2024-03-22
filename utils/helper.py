@@ -3,7 +3,7 @@ import streamlit as st
 import os
 
 llm_models = {
-    "OpenAI": ["gpt-3.5-turbo"],
+    "OpenAI": ["gpt-3.5-turbo", "gpt-4"],
     "AOAI":  ["gpt-35-turbo","gpt-4"],
     "SelfHost": ["THUDM/chatglm3-6b-32k"],
 }
